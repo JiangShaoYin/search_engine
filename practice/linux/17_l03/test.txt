@@ -1,0 +1,15 @@
+/home/yue
+├── install.sh
+├── learning
+│   └── wd
+│       ├── 16_L02
+│       │   └── a.c
+│       └── 17_l03
+│           ├── a.txt
+│           ├── b.txt
+│           ├── c.txt
+│           └── test.txt
+├── oh-my-zsh-core.zip
+└── wget-log
+
+4 directories, 8 files
