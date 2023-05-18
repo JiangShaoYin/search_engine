@@ -1,0 +1,11 @@
+2023-04-25 23:38:50,607  [INFO] FILE: 3.cc FUNCTION: test1 LINE: 114The log is info message
+2023-04-25 23:38:50,607  [ERROR] FILE: 3.cc FUNCTION: test1 LINE: 115The log is error message
+2023-04-25 23:38:50,608  [WARN] FILE: 3.cc FUNCTION: test1 LINE: 116The log is warn message
+2023-04-25 23:39:03,296  [INFO] FILE: 3.cc FUNCTION: test1 LINE: 114The log is info message
+2023-04-25 23:39:03,296  [ERROR] FILE: 3.cc FUNCTION: test1 LINE: 115The log is error message
+2023-04-25 23:39:03,296  [WARN] FILE: 3.cc FUNCTION: test1 LINE: 116The log is warn message
+2023-04-25 23:39:03,297  [DEBUG] FILE: 3.cc FUNCTION: test1 LINE: 117The log is debug message
+2023-04-26 11:13:16,556  [INFO] FILE: 3.cc FUNCTION: test1 LINE: 115The log is info message
+2023-04-26 11:13:16,557  [ERROR] FILE: 3.cc FUNCTION: test1 LINE: 116The log is error message
+2023-04-26 11:13:16,557  [WARN] FILE: 3.cc FUNCTION: test1 LINE: 117The log is warn message
+2023-04-26 11:13:16,557  [DEBUG] FILE: 3.cc FUNCTION: test1 LINE: 118The log is debug message
