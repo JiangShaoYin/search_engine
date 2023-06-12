@@ -1,0 +1,40 @@
+2023-06-08 22:09:42,207: INFO  :LRU更新缓存 ##../../../include/Timerfd.h:timerFd:52##
+2023-06-08 22:09:45,207: INFO  :LRU更新缓存 ##../../../include/Timerfd.h:timerFd:52##
+2023-06-08 22:09:45,363: INFO  :处理旧连接请求发送 ##EventLoop.cc:waitEpollFd:123##
+2023-06-08 22:12:16,000: INFO  :启动TimerFd ##TestEchoServer.cc:main:25##
+2023-06-08 22:12:16,001: INFO  :初始化CacheManger ##TestEchoServer.cc:main:27##
+2023-06-08 22:12:16,001: INFO  :初始化中文字典 ##TestEchoServer.cc:main:33##
+2023-06-08 22:12:16,076: INFO  :初始化英文字典 ##TestEchoServer.cc:main:36##
+2023-06-08 22:12:16,369: INFO  :初始化服务器 ##TestEchoServer.cc:main:40##
+2023-06-08 22:12:16,369: INFO  :服务器启动 ##TestEchoServer.cc:main:42##
+2023-06-08 22:12:17,001: INFO  :LRU更新缓存 ##../../../include/Timerfd.h:timerFd:52##
+2023-06-08 22:12:20,001: INFO  :LRU更新缓存 ##../../../include/Timerfd.h:timerFd:52##
+2023-06-08 22:12:23,001: INFO  :LRU更新缓存 ##../../../include/Timerfd.h:timerFd:52##
+2023-06-08 22:12:25,622: INFO  :处理新的连接请求,FD = 5 ##EventLoop.cc:waitEpollFd:104##
+2023-06-08 22:12:26,001: INFO  :LRU更新缓存 ##../../../include/Timerfd.h:timerFd:52##
+2023-06-08 22:12:29,001: INFO  :LRU更新缓存 ##../../../include/Timerfd.h:timerFd:52##
+2023-06-08 22:12:30,147: INFO  :处理旧连接请求发送 ##EventLoop.cc:waitEpollFd:123##
+2023-06-08 22:12:30,148: INFO  :网页关键词p��WS为第一次查询 ##../../../include/Server_EchoServer.h:process:61##
+2023-06-08 22:12:30,148: INFO  :网页查询 - 初始化查询器WebPageSearcher ##WebPageSearcher.cc:WebPageSearcher:17##
+2023-06-08 22:12:30,148: INFO  :网页查询 - WebPageSearcher::开始查询 ##WebPageSearcher.cc:doQuery:25##
+2023-06-08 22:12:30,148: INFO  :网页查询 - WebPageQuery::doQuery, 读取配置文件完成！ ##WebPageQuery.cc:doQuery:42##
+2023-06-08 22:12:30,148: INFO  :网页查询 - WebPageQuery::doQuery, 从config获取的pageLibPath: ../../../data ##WebPageQuery.cc:doQuery:45##
+2023-06-08 22:12:30,148: INFO  :网页查询 - 磁盘加载偏移库文件 ##WebPageQuery.cc:loadLibrary:107##
+2023-06-08 22:12:30,153: INFO  :网页查询 - 磁盘加载倒排索引表文件 ##WebPageQuery.cc:loadLibrary:127##
+2023-06-08 22:12:31,606: INFO  :网页查询 - WebPageQuery::doQuery, 加载偏移库与倒排索引库完成！ ##WebPageQuery.cc:doQuery:48##
+2023-06-08 22:12:31,606: INFO  :网页查询 - WebPageQuery::doQuery, 偏移库大小：3756 ##WebPageQuery.cc:doQuery:49##
+2023-06-08 22:12:31,606: INFO  :网页查询 - WebPageQuery::doQuery, 倒排索引库大小：105731 ##WebPageQuery.cc:doQuery:50##
+2023-06-08 22:12:31,607: INFO  :网页查询 - WebPageQuery::doQuery, 获取查询词完成, 查询词个数：1 ##WebPageQuery.cc:doQuery:62##
+2023-06-08 22:12:31,607: INFO  :网页查询 - WebPageQuery::doQuery, 查询词 : 中国  ##WebPageQuery.cc:doQuery:68##
+2023-06-08 22:12:31,607: INFO  :网页查询 - WebPageQuery::doQuery, 获取查询词的权重向量完成 ##WebPageQuery.cc:doQuery:71##
+2023-06-08 22:12:32,001: INFO  :LRU更新缓存 ##../../../include/Timerfd.h:timerFd:52##
+2023-06-08 22:12:32,072: INFO  :网页查询 - WebPageQuery::doQuery, 执行查询完成，查到相关文章个数：1741 ##WebPageQuery.cc:doQuery:79##
+2023-06-08 22:12:32,073: INFO  :网页查询 - WebPageQuery::doQuery, 根据相似度从大到小排序完成 ##WebPageQuery.cc:doQuery:90##
+2023-06-08 22:12:35,001: INFO  :LRU更新缓存 ##../../../include/Timerfd.h:timerFd:52##
+2023-06-08 22:12:38,001: INFO  :LRU更新缓存 ##../../../include/Timerfd.h:timerFd:52##
+2023-06-08 22:12:39,283: INFO  :网页查询 - WebPageQuery::doQuery, 搜索目标网页完成 ##WebPageQuery.cc:doQuery:93##
+2023-06-08 22:12:39,359: INFO  :网页查询 - WebPageQuery::doQuery, 创建json字符串完成, 返回json字符串 ##WebPageQuery.cc:doQuery:96##
+2023-06-08 22:12:39,362: INFO  :EventLoop获得EventFd通知 ##EventLoop.cc:waitEpollFd:112##
+2023-06-08 22:12:41,001: INFO  :LRU更新缓存 ##../../../include/Timerfd.h:timerFd:52##
+2023-06-08 22:12:44,001: INFO  :LRU更新缓存 ##../../../include/Timerfd.h:timerFd:52##
+2023-06-08 22:12:47,001: INFO  :LRU更新缓存 ##../../../include/Timerfd.h:timerFd:52##
