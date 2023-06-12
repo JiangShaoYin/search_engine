@@ -14,6 +14,7 @@ using std::endl;
 using std::set;
 using std::string;
 using std::vector;
+using std::cin;
 
 WebPage::WebPage(int docId, const string& docTitle, const string& docUrl, const string& docContent)
     : _docId(docId), _docTitle(docTitle), _docUrl(docUrl), _docContent(docContent) {}
