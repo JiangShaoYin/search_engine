@@ -1,4 +1,4 @@
 test/
 
-./client/a.out
-./sever/a.out
+client/a.out
+sever/a.out
