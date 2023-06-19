@@ -17,15 +17,15 @@ using std::vector;
 using std::cin;
 
 WebPage::WebPage(int docId, const string& docTitle, const string& docUrl, const string& docContent)
-    : _docId(docId), _docTitle(docTitle), _docUrl(docUrl), _docContent(docContent) {}
+    : docId_(docId), docTitle_(docTitle), docUrl_(docUrl), docContent_(docContent) {}
 WebPage::~WebPage() {}
 
-int WebPage::getDocId() const { return _docId; }                // 获取文档id
-string WebPage::getTitle() const { return _docTitle; }          // 获取文档标题
-string WebPage::setSummary(const vector<string>& queryWords) {  // 生成文档摘要g
+int WebPage::GetDocId() const { return docId_; }                // 获取文档id
+string WebPage::GetTitle() const { return docTitle_; }          // 获取文档标题
+string WebPage::SetSummary(const vector<string>& queryWords) {  // 生成文档摘要g
                                                                 // 1.获取文档内容的分词结果
   auto _wordCutTool = SplitToolCppJieba::GetInstance(Configuration::GetInstance("").get());
-  vector<string> wordsVec = _wordCutTool->cut(_docContent);
+  vector<string> wordsVec = _wordCutTool->cut(docContent_);
   // 2.将查询词放入set
   set<string> queryWordsSet;
   for (auto& word : queryWords) {
@@ -81,10 +81,10 @@ string WebPage::setSummary(const vector<string>& queryWords) {  // 生成文档�
   }
   // 4.将vector中的单词拼接成字符串
   for (auto& word : summaryVec) {
-    _docSummary += word;
+    docSummary_ += word;
   }
-  return _docSummary;
+  return docSummary_;
 }
-string WebPage::getSummary() const { return _docSummary; }  // 获取文档摘要
-string WebPage::getUrl() const { return _docUrl; }          // 获取文档url
-string WebPage::getContent() const { return _docContent; }  // 获取文档内容
+string WebPage::GetSummary() const { return docSummary_; }  // 获取文档摘要
+string WebPage::GetUrl() const { return docUrl_; }          // 获取文档url
+string WebPage::GetContent() const { return docContent_; }  // 获取文档内容

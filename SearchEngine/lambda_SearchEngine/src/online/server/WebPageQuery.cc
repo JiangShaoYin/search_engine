@@ -25,9 +25,9 @@ using std::unordered_map;
 using std::vector;
 using json = nlohmann::json;
 
-vector<pair<int, WebPage>> WebPageQuery::_pageLib = vector<pair<int, WebPage>>();
-unordered_map<int, pair<int, int>> WebPageQuery::_offsetLib = unordered_map<int, pair<int, int>>();
-unordered_map<string, set<pair<int, double>>> WebPageQuery::_invertIndexTable = unordered_map<string, set<pair<int, double>>>();
+vector<pair<int, WebPage>> WebPageQuery::page_lib_ = vector<pair<int, WebPage>>();
+unordered_map<int, pair<int, int>> WebPageQuery::offset_lib_ = unordered_map<int, pair<int, int>>();
+unordered_map<string, set<pair<int, double>>> WebPageQuery::invert_index_ = unordered_map<string, set<pair<int, double>>>();
 
 WebPageQuery::WebPageQuery() {
 }
@@ -36,7 +36,7 @@ WebPageQuery::~WebPageQuery() {
 }
 
 // 执行查询
-string WebPageQuery::doQuery(const string& key) {
+string WebPageQuery::DoQuery(const string& key) {
   // 1. 读取配置文件
   auto conf = Configuration::GetInstance("");
   logInfo("网页查询 - WebPageQuery::doQuery, 读取配置文件完成！");
@@ -44,10 +44,10 @@ string WebPageQuery::doQuery(const string& key) {
   string pageLibPath = conf->getConfigMap("onlinedata");
   logInfo("网页查询 - WebPageQuery::doQuery, 从config获取的pageLibPath: " + pageLibPath);
   // 2. 加载偏移库与倒排索引库
-  loadLibrary(pageLibPath);
+  LoadLibrary(pageLibPath);
   logInfo("网页查询 - WebPageQuery::doQuery, 加载偏移库与倒排索引库完成！");
-  logInfo("网页查询 - WebPageQuery::doQuery, 偏移库大小：" + std::to_string(_offsetLib.size()));
-  logInfo("网页查询 - WebPageQuery::doQuery, 倒排索引库大小：" + std::to_string(_invertIndexTable.size()));
+  logInfo("网页查询 - WebPageQuery::doQuery, 偏移库大小：" + std::to_string(offset_lib_.size()));
+  logInfo("网页查询 - WebPageQuery::doQuery, 倒排索引库大小：" + std::to_string(invert_index_.size()));
   // 3. 获取查询词
   auto _wordCutTool = SplitToolCppJieba::GetInstance(Configuration::GetInstance("").get());
   vector<string> queryWords = _wordCutTool->cut(key);
@@ -67,11 +67,11 @@ string WebPageQuery::doQuery(const string& key) {
   }
   logInfo(logQueryWords);
   // 3. 获取查询词的权重向量， baseVector
-  vector<double> queryWordsWeightVector = getQueryWordsWeightVector(queryWords);
+  vector<double> queryWordsWeightVector = GetQueryWordsWeightVector(queryWords);
   logInfo("网页查询 - WebPageQuery::doQuery, 获取查询词的权重向量完成");
   // 4. 执行查询，查出的结果存入resultVec中，其中int为文章id，vector<double>为文章的权重向量，queryWords为查询词
   vector<pair<int, vector<double>>> resultVec;
-  bool res = executeQuery(queryWords, resultVec);
+  bool res = ExecuteQuery(queryWords, resultVec);
   if (!res) {
     logInfo("网页查询 - WebPageQuery::doQuery, 未查到相关文章！");
     return string("未查到相关文章！");
@@ -80,7 +80,7 @@ string WebPageQuery::doQuery(const string& key) {
   // 5. 根据向量夹角计算相似度 resresultVecWithSimilarity : <文章id, 相似度>
   vector<pair<int, double>> resultVecWithSimilarity;
   for (auto& item : resultVec) {
-    double similarity = computeSimilarity(item.second, queryWordsWeightVector);
+    double similarity = ComputeSimilarity(item.second, queryWordsWeightVector);
     resultVecWithSimilarity.push_back(std::make_pair(item.first, similarity));
   }
   // 6. 根据相似度从大到小排序，结果存入容器中
@@ -89,19 +89,19 @@ string WebPageQuery::doQuery(const string& key) {
   });
   logInfo("网页查询 - WebPageQuery::doQuery, 根据相似度从大到小排序完成");
   // 7. 根据查询结果，在网页库中搜索对应的网页，获取网页的url、title、content
-  getWebPage(resultVecWithSimilarity, queryWords, pageLibPath);
+  GetWebPage(resultVecWithSimilarity, queryWords, pageLibPath);
   logInfo("网页查询 - WebPageQuery::doQuery, 搜索目标网页完成");
   // 7. 创建json字符串，resultVec为查询结果，其中int为文章id，vector<double>为文章的权重向量，queryWords为查询词
-  string json = createJson(resultVecWithSimilarity, queryWords);
+  string json = CreateJson(resultVecWithSimilarity, queryWords);
   logInfo("网页查询 - WebPageQuery::doQuery, 创建json字符串完成, 返回json字符串");
   // 8. 返回json字符串
   return json;
 }
 
 // 加载偏移库与倒排索引库
-void WebPageQuery::loadLibrary(const string& path) {
+void WebPageQuery::LoadLibrary(const string& path) {
   string line;
-  if (_offsetLib.size() == 0) {
+  if (offset_lib_.size() == 0) {
     // 偏移库文件 offsettest.dat
     string offsetPath = path + "/offsettest.dat";
     logInfo("网页查询 - 磁盘加载偏移库文件");
@@ -116,12 +116,12 @@ void WebPageQuery::loadLibrary(const string& path) {
       int len;
       istringstream iss(line);
       iss >> id >> offset >> len;
-      _offsetLib.insert(std::make_pair(id, std::make_pair(offset, len)));
+      offset_lib_.insert(std::make_pair(id, std::make_pair(offset, len)));
     }
     offsetIfs.close();
   }
 
-  if (_invertIndexTable.size() == 0) {
+  if (invert_index_.size() == 0) {
     // 倒排索引表文件 Inverttest.dat
     string invertIndexTablePath = path + "/Inverttest.dat";
     logInfo("网页查询 - 磁盘加载倒排索引表文件");
@@ -137,7 +137,7 @@ void WebPageQuery::loadLibrary(const string& path) {
       istringstream iss(line);
       iss >> word;                      // 首先取出单词
       while (iss >> docId >> weight) {  // 循环取出 docId 和 weight
-        _invertIndexTable[word].insert(std::make_pair(docId, weight));
+        invert_index_[word].insert(std::make_pair(docId, weight));
       }
     }
     invertIndexTableIfs.close();
@@ -145,7 +145,7 @@ void WebPageQuery::loadLibrary(const string& path) {
 }
 
 // 获取查询词的权重向量
-vector<double> WebPageQuery::getQueryWordsWeightVector(const vector<string>& queryWords) {
+vector<double> WebPageQuery::GetQueryWordsWeightVector(const vector<string>& queryWords) {
   map<string, int> queryWordsMap;
   for (auto& word : queryWords) {
     ++queryWordsMap[word];
@@ -157,9 +157,9 @@ vector<double> WebPageQuery::getQueryWordsWeightVector(const vector<string>& que
     // 1. 取出查询词在查询语句中的词频
     int tf = queryWordsMap[word];
     // 2. 取出包含该词语的文档数
-    int df = _invertIndexTable[word].size();
+    int df = invert_index_[word].size();
     // 3. 计算该文档的逆文档频率
-    int docNum = _offsetLib.size();
+    int docNum = offset_lib_.size();
     double idf = log(docNum / (df + 1)) / log(2);
     // 4. 计算该词语的权重
     double weight = tf * idf;
@@ -169,13 +169,13 @@ vector<double> WebPageQuery::getQueryWordsWeightVector(const vector<string>& que
 }
 
 // 执行查询，查出的结果存入resultVec中，其中int为文章id，vector<double>为文章的权重向量，queryWords为查询词
-bool WebPageQuery::executeQuery(const vector<string>& queryWords, vector<pair<int, vector<double>>>& resultVec) {
+bool WebPageQuery::ExecuteQuery(const vector<string>& queryWords, vector<pair<int, vector<double>>>& resultVec) {
   // 1. 获取目标文档集合
   set<int> docIdSet;
   for (auto& word : queryWords) {
     set<int> tmpSet;
     // 首先找出包含该词语的文档集合
-    set<pair<int, double>> indexList = _invertIndexTable[word];
+    set<pair<int, double>> indexList = invert_index_[word];
     for (auto& pair : indexList) {
       // 将文档id存入临时集合中
       tmpSet.insert(pair.first);
@@ -195,7 +195,7 @@ bool WebPageQuery::executeQuery(const vector<string>& queryWords, vector<pair<in
     vector<double> docWeightVector;
     for (auto& word : queryWords) {
       // 2.2 获取该词语在该文档中的权重
-      set<pair<int, double>> indexList = _invertIndexTable[word];
+      set<pair<int, double>> indexList = invert_index_[word];
       double weight = 0;
       for (auto& pair : indexList) {
         if (pair.first == docId) {
@@ -216,7 +216,7 @@ bool WebPageQuery::executeQuery(const vector<string>& queryWords, vector<pair<in
 }
 
 // 根据向量夹角计算相似度
-double WebPageQuery::computeSimilarity(vector<double>& lhs, vector<double>& rhs) {
+double WebPageQuery::ComputeSimilarity(vector<double>& lhs, vector<double>& rhs) {
   // 利用两个向量夹角的余弦值计算相似度
   // 1. 计算两个向量的模
   double lhsNorm = 0;
@@ -238,7 +238,7 @@ double WebPageQuery::computeSimilarity(vector<double>& lhs, vector<double>& rhs)
   return cosValue;
 }
 
-void WebPageQuery::getWebPage(const vector<pair<int, double>>& docIdVec, const vector<string>& queryWords, string& dataDirPath) {
+void WebPageQuery::GetWebPage(const vector<pair<int, double>>& docIdVec, const vector<string>& queryWords, string& dataDirPath) {
   string pageLibPath = dataDirPath + "/pagetest.dat";
   ifstream ifs(pageLibPath);
   // 1. 遍历docIdVec，分别找出对应文章的偏移量和长度
@@ -247,7 +247,7 @@ void WebPageQuery::getWebPage(const vector<pair<int, double>>& docIdVec, const v
     int docId = pair.first;
     // 查看当前文章是否已经被处理过
     bool flag = false;
-    for (auto& item : _pageLib) {
+    for (auto& item : page_lib_) {
       int idNum = item.first;
       if (docId == idNum) {
         flag = true;
@@ -258,8 +258,8 @@ void WebPageQuery::getWebPage(const vector<pair<int, double>>& docIdVec, const v
       continue;
     }
     // 根据文章id获取文章偏移量和长度
-    int off = _offsetLib[docId].first;
-    int len = _offsetLib[docId].second;
+    int off = offset_lib_[docId].first;
+    int len = offset_lib_[docId].second;
     // 2. 根据偏移量和长度获取文章内容
     ifs.seekg(off, ifs.beg);
     char* buf = new char[len + 1]();
@@ -285,9 +285,9 @@ void WebPageQuery::getWebPage(const vector<pair<int, double>>& docIdVec, const v
     // 装载文章
     WebPage webPage(docId, docTitle, docUrl, docContent);
     // 3.5生成文章摘要
-    string summary = webPage.setSummary(queryWords);
+    string summary = webPage.SetSummary(queryWords);
     // 3.6 将文章存入_pageLib中
-    _pageLib.push_back(std::make_pair(docId, webPage));
+    page_lib_.push_back(std::make_pair(docId, webPage));
     // 4. 释放内存
     delete[] buf;
   }
@@ -295,19 +295,19 @@ void WebPageQuery::getWebPage(const vector<pair<int, double>>& docIdVec, const v
 }
 
 void to_json(json& j, const WebPage& p) {
-  j = json{{"id", p.getDocId()},
-           {"title", p.getTitle()},
-           {"url", p.getUrl()},
-           {"summary", p.getSummary()}};
+  j = json{{"id", p.GetDocId()},
+           {"title", p.GetTitle()},
+           {"url", p.GetUrl()},
+           {"summary", p.GetSummary()}};
 }
 
 // 创建json字符串，resultVecWithSimilarity为查询结果，其中int为文章id，double为文章的相似度，queryWords为查询词
-string WebPageQuery::createJson(vector<pair<int, double>>& resultVecWithSimilarity, const vector<string>& queryWords) {
+string WebPageQuery::CreateJson(vector<pair<int, double>>& resultVecWithSimilarity, const vector<string>& queryWords) {
   // 1. 根据resultVecWithSimilarity中的文章id，找到_pageLib中对应的文章
   vector<WebPage> webPageVec;
   for (auto& pair : resultVecWithSimilarity) {
     int docId = pair.first;
-    for (auto& pagePair : _pageLib) {
+    for (auto& pagePair : page_lib_) {
       if (pagePair.first == docId) {
         webPageVec.push_back(pagePair.second);
         break;

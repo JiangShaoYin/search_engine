@@ -11,7 +11,7 @@ using std::cout;
 using std::endl;
 
 WebPageSearcher::WebPageSearcher(const string & sought)
-    : _sought(sought)
+    : sought_(sought)
     { 
         // 日志信息===================================
         logInfo("网页查询 - 初始化查询器WebPageSearcher");
@@ -23,6 +23,6 @@ WebPageSearcher::~WebPageSearcher() { }
 string WebPageSearcher::doQuery(const string & str) {
     // 日志信息===================================
     logInfo("网页查询 - WebPageSearcher::开始查询");
-    string result = _query.doQuery(str);
+    string result = query_.DoQuery(str);
     return result;
 }
