@@ -3,27 +3,27 @@
 #include <strings.h>
 
 InetAddress::InetAddress(const string &ip, unsigned short port) {
-  ::bzero(&_addr, sizeof(struct sockaddr_in));
-  _addr.sin_family = AF_INET;
-  _addr.sin_port = htons(port);
-  _addr.sin_addr.s_addr = inet_addr(ip.c_str());  // host->network
+  ::bzero(&addr_, sizeof(struct sockaddr_in));
+  addr_.sin_family = AF_INET;
+  addr_.sin_port = htons(port);
+  addr_.sin_addr.s_addr = inet_addr(ip.c_str());  // host->network
 }
 
 InetAddress::InetAddress(const struct sockaddr_in &addr)
-    : _addr(addr) {}
+    : addr_(addr) {}
 
 InetAddress::~InetAddress() {}
 
-string InetAddress::ip() const {
+string InetAddress::Ip() const {
   // 从网络字节序转换为本机字节序
-  return string(inet_ntoa(_addr.sin_addr));
+  return string(inet_ntoa(addr_.sin_addr));
 }
 
-unsigned short InetAddress::port() const {
+unsigned short InetAddress::Port() const {
   // 从网络字节序转换为本机字节序
-  return ntohs(_addr.sin_port);
+  return ntohs(addr_.sin_port);
 }
 
-const struct sockaddr_in *InetAddress::getInetAddrPtr() const {
-  return &_addr;
+const struct sockaddr_in *InetAddress::GetInetAddrPtr() const {
+  return &addr_;
 }

@@ -1,23 +1,24 @@
-#ifndef _WEBPAGESEARCHER_H_
-#define _WEBPAGESEARCHER_H_
-#include <string>
+#pragma once
+
 #include <memory>
+#include <string>
+
 #include "Server_TcpConnection.h"
 #include "WebPageQuery.h"
 
-using std::string;
 using std::shared_ptr;
+using std::string;
 
 class WebPageSearcher {
-    using TcpConnectionPtr = shared_ptr<TcpConnection>;
-public:
-    WebPageSearcher(const string &sought);
-    ~WebPageSearcher();
-    string doQuery(const string &str);
+  using TcpConnectionPtr = shared_ptr<TcpConnection>;
 
-private:
-string _sought;
-WebPageQuery _query;
+ public:
+  WebPageSearcher(const string &sought);
+            
+  ~WebPageSearcher();
+  string doQuery(const string &str);
+
+ private:
+  string sought_;
+  WebPageQuery query_;
 };
-
-#endif

@@ -1,6 +1,4 @@
-#ifndef __NONCOPYABLE_H__
-#define __NONCOPYABLE_H__
-
+#pragma once
 //不允许复制或者赋值
 class NonCopyable
 {
@@ -17,5 +15,3 @@ protected:
     NonCopyable(const NonCopyable &) = delete;
     NonCopyable &operator=(const NonCopyable &) = delete;
 };
-
-#endif

@@ -1,5 +1,4 @@
-#ifndef __TCPCONNECTION_H__
-#define __TCPCONNECTION_H__
+#pragma once
 
 #include "Client_Socket.h"
 #include "Client_SocketIO.h"
@@ -19,40 +18,38 @@ class TcpConnection
 public:
     explicit TcpConnection(int fd);
     ~TcpConnection();
-    void send(const string &msg);
-    void sendInt(int num);
-    string receive(int len);
-    int receiveInt();
-    bool isClosed() const;
+    void Send(const string &msg);
+    void SendInt(int num);
+    string Receive(int len);
+    int ReceiveInt();
+    bool IsClosed() const;
     //为了方便调试的函数
-    string toString();
+    string ToString();
 
     //注册Tcp连接中的三个事情
-    void setConnectionCallback(const TcpConnectionCallback &cb);
-    void setMessageCallback(const TcpConnectionCallback &cb);
-    void setCloseCallback(const TcpConnectionCallback &cb);
+    void SetConnectionCallback(const TcpConnectionCallback &cb);
+    void SetMessageCallback(const TcpConnectionCallback &cb);
+    void SetCloseCallback(const TcpConnectionCallback &cb);
 
     //执行Tcp通信过程中的三个事件
-    void handleConnectionCallback();
-    void handleMessageCallback();
-    void handleCloseCallback();
+    void HandleConnectionCallback();
+    void HandleMessageCallback();
+    void HandleCloseCallback();
 
 private:
     //获取本端地址与对端地址
-    InetAddress getLocalAddr();
-    InetAddress getPeerAddr();
+    InetAddress GetLocalAddr();
+    InetAddress GetPeerAddr();
 
 private:
-    SocketIO _sockIO;
+    SocketIO sockIO_;
 
     //为了调试而加入的函数
-    Socket _sock;
-    InetAddress _localAddr;
-    InetAddress _peerAddr;
+    Socket sock_;
+    InetAddress localAddr_;
+    InetAddress peerAddr_;
 
-    TcpConnectionCallback _onConnectionCb;//连接建立
-    TcpConnectionCallback _onMessageCb;//消息到达
-    TcpConnectionCallback _onCloseCb;//连接断开
+    TcpConnectionCallback onConnectionCb_;//连接建立
+    TcpConnectionCallback onMessageCb_;//消息到达
+    TcpConnectionCallback onCloseCb_;//连接断开
 };
-
-#endif

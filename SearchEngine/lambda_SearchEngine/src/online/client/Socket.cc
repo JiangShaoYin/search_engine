@@ -6,37 +6,37 @@
 #include <unistd.h>
 
 Socket::Socket() {
-  _fd = ::socket(AF_INET, SOCK_STREAM, 0);
-  if (_fd < 0) {
+  fd_ = ::socket(AF_INET, SOCK_STREAM, 0);
+  if (fd_ < 0) {
     perror("socket");
     return;
   }
 }
 
 Socket::Socket(int fd)
-    : _fd(fd) {
+    : fd_(fd) {
 }
 
 Socket::~Socket() {
-  close(_fd);
+  close(fd_);
 }
 
 int Socket::fd() const {
-  return _fd;
+  return fd_;
 }
 
-void Socket::shutDownWrite() {
+void Socket::ShutDownWrite() {
   // 关闭写端
-  int ret = shutdown(_fd, SHUT_WR);
+  int ret = shutdown(fd_, SHUT_WR);
   if (ret) {
     perror("shutdown");
     return;
   }
 }
 
-void Socket::setTcpNoDelay(bool on) {
+void Socket::SetTcpNoDelay(bool on) {
   int optval = on ? 1 : 0;
-  int ret = ::setsockopt(_fd, IPPROTO_TCP, TCP_NODELAY, &optval, static_cast<socklen_t>(sizeof optval));
+  int ret = ::setsockopt(fd_, IPPROTO_TCP, TCP_NODELAY, &optval, static_cast<socklen_t>(sizeof optval));
   if (ret < 0) {
     perror("setsockopt");
     return;

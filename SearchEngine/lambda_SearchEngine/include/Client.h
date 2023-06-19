@@ -1,6 +1,4 @@
-#ifndef __CLIENT_H__
-#define __CLIENT_H__
-
+#pragma once
 #include <iostream>
 #include <sys/epoll.h>
 #include <unistd.h>
@@ -28,22 +26,20 @@ class Client {
 public:
     Client(const string &ip, unsigned short port);
     ~Client();
-    void connect(); // 连接服务器，获取赋值后的sockfd
-    void start(); // 启动客户端
-    void addEpollReadFd(int fd); // 将文件描述符放在红黑树上进行监听
-    string readStdin(); // 从标准输入读取数据
-    void sendServer(string msg, TcpConnection & con); // 向服务器发送数据
-    string readServer(TcpConnection & con); // 从服务器读取数据
-    void displayKey(string result); // 显示服务器发送的数据
-    void displayWeb(string result);
-    void pagingDisplay(vector<Page> &v);
-    void close(); // 关闭客户端
-    int createEpollFd(); // 创建epfd文件描述符
+    void Connect(); // 连接服务器，获取赋值后的sockfd
+    void Start(); // 启动客户端
+    void AddEpollReadFd(int fd); // 将文件描述符放在红黑树上进行监听
+    string ReadStdin(); // 从标准输入读取数据
+    void SendServer(string msg, TcpConnection & con); // 向服务器发送数据
+    string ReadServer(TcpConnection & con); // 从服务器读取数据
+    void DisplayKey(string result); // 显示服务器发送的数据
+    void DisplayWeb(string result);
+    void PagingDisplay(vector<Page> &v);
+    void Close(); // 关闭客户端
+    int CreateEpollFd(); // 创建epfd文件描述符
 private:
-    int _epfd; // epoll_create返回的文件描述符
-    Socket _sock; // 储存本地的socket，其中包含sockfd
-    bool _isClosed; // 标记客户端是否关闭
-    InetAddress _addr; // 服务器的地址信息
+    int epfd_; // epoll_create返回的文件描述符
+    Socket sock_; // 储存本地的socket，其中包含sockfd
+    bool isClosed_; // 标记客户端是否关闭
+    InetAddress addr_; // 服务器的地址信息
 };
-
-#endif

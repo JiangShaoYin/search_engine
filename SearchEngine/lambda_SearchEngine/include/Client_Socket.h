@@ -1,5 +1,4 @@
-#ifndef __SOCKET_H__
-#define __SOCKET_H__
+#pragma once
 
 #include "Client_NonCopyable.h"
 #include <sys/socket.h>
@@ -14,11 +13,9 @@ public:
     explicit Socket(int fd);
     ~Socket();
     int fd() const;
-    void shutDownWrite();
-    void setTcpNoDelay(bool on);
+    void ShutDownWrite();
+    void SetTcpNoDelay(bool on);
 
 private:
-    int _fd;
+    int fd_;
 };
-
-#endif

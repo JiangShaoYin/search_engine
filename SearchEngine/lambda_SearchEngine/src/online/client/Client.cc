@@ -10,24 +10,23 @@ using std::stringstream;
 using std::vector;
 
 Client::Client(const string &ip, unsigned short port)
-    : _epfd(createEpollFd())  // 创建epfd文件描述符
-      ,
-      _sock(),
-      _isClosed(false),
-      _addr(ip, port) {
+    : epfd_(CreateEpollFd())  // 创建epfd文件描述符
+      ,sock_(),
+      isClosed_(false),
+      addr_(ip, port) {
   // 取消输出缓冲
   setbuf(stdout, NULL);
 }
 
 Client::~Client() {
-  if (!_isClosed) {
-    close();
+  if (!isClosed_) {
+    Close();
   }
 }
 
 // 连接服务器
-void Client::connect() {
-  int ret = ::connect(_sock.fd(), (struct sockaddr *)_addr.getInetAddrPtr(), sizeof(struct sockaddr));
+void Client::Connect() {
+  int ret = ::connect(sock_.fd(), (struct sockaddr *)addr_.GetInetAddrPtr(), sizeof(struct sockaddr));
   if (ret < 0) {
     perror("connect");
     return;
@@ -36,15 +35,15 @@ void Client::connect() {
   // _sock.setTcpNoDelay(true);
 }
 
-void Client::start() {
-  _isClosed = false;
+void Client::Start() {
+  isClosed_ = false;
 
-  connect();                      // 连接服务器
-  TcpConnection con(_sock.fd());  // 创建TcpConnection对象
+  Connect();                      // 连接服务器
+  TcpConnection con(sock_.fd());  // 创建TcpConnection对象
 
   // 将连接和标准输入加入epoll监听
-  addEpollReadFd(_sock.fd());
-  addEpollReadFd(STDIN_FILENO);
+  AddEpollReadFd(sock_.fd());
+  AddEpollReadFd(STDIN_FILENO);
 
   printf("\n\n");
   system("toilet --gay -f smblock \"Welcome . Lambda . Group\"");
@@ -53,16 +52,16 @@ void Client::start() {
   auto startTime = std::chrono::high_resolution_clock::now();
   auto endTime = std::chrono::high_resolution_clock::now();
 
-  struct epoll_event _events[2];
+  struct epoll_event events[2];
   int flag = 1;
-  while (!_isClosed) {
+  while (!isClosed_) {
     if(flag) {
       cout << "========== 1->关键字 :: 2->网页 :: 3->退出 ==========" << endl;
       cout << "lambda>> ";
       flag = 0;
     }
     // 调用epoll_wait函数，监听epfd上的文件描述符，不设置超时时间
-    int nready = epoll_wait(_epfd, _events, 2, -1);
+    int nready = epoll_wait(epfd_, events, 2, -1);
     if (nready <= 0) {
       perror("epoll_wait");
       return;
@@ -70,10 +69,10 @@ void Client::start() {
     // cout << "nready : " << nready << endl;
     for (int i = 0; i < nready; ++i) {
       // 如果是标准输入可读
-      if (_events[i].data.fd == STDIN_FILENO) {
+      if (events[i].data.fd == STDIN_FILENO) {
         // cout << "cin is ready" << endl;
         // 从标准输入读取数据
-        string msg = readStdin();
+        string msg = ReadStdin();
         // cout << "====================cin msg : " << msg << endl;
         if (msg.size() == 0) {
           // 如果读取到的数据为空，就继续读取
@@ -90,7 +89,7 @@ void Client::start() {
         // 如果是退出命令
         if (cmd == "3") {
           cout << "client close" << endl;
-          close();
+          Close();
           return;
         }
         // 2. 提取查询词
@@ -106,17 +105,17 @@ void Client::start() {
         // 杰森事项后期添加
         // 4. 将数据发送给服务器
         // cout << "====================client sendmsg : " << sendmsg << endl;
-        sendServer(sendmsg, con);
+        SendServer(sendmsg, con);
         cout << "正在查询，请稍后..." << endl;
         // cout << "重新赋值start" << endl;
         startTime = std::chrono::high_resolution_clock::now();
       }
 
       // 如果是服务器可读
-      if (_events[i].data.fd == _sock.fd()) {
+      if (events[i].data.fd == sock_.fd()) {
         // cout << "server is ready" << endl;
         // 1. 从服务器读取数据
-        string msg = readServer(con);
+        string msg = ReadServer(con);
         // 切出前一个字符，判断flag
         string num = msg.substr(0, 1);
         // 1:key;2:web
@@ -127,7 +126,7 @@ void Client::start() {
         string result = msg.substr(2);
         if (result.size() == 0) {
           cout << "server close" << endl;
-          close();
+          Close();
           return;
         }
         // cout << "重新赋值end" << endl;
@@ -135,9 +134,9 @@ void Client::start() {
         auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime);
         std::cout << "查询耗时" << static_cast<double>(duration.count()) / 1000.0 << " 秒" << std::endl;
         if (1 == flag) {
-          displayKey(result);
+          DisplayKey(result);
         } else {
-          displayWeb(result);
+          DisplayWeb(result);
         }
         cout << "========== 1->关键字 :: 2->网页 :: 3->退出 ==========" << endl;
         cout << "lambda>> ";
@@ -147,49 +146,49 @@ void Client::start() {
 }
 
 // 将文件描述符放在红黑树上进行监听或者从红黑树上摘除
-void Client::addEpollReadFd(int fd) {
+void Client::AddEpollReadFd(int fd) {
   struct epoll_event evt;
   evt.data.fd = fd;
   evt.events = EPOLLIN;
 
-  int ret = ::epoll_ctl(_epfd, EPOLL_CTL_ADD, fd, &evt);
+  int ret = ::epoll_ctl(epfd_, EPOLL_CTL_ADD, fd, &evt);
   if (ret < 0) {
     perror("epoll_ctl add");
     return;
   }
 }
 
-string Client::readStdin() {
+string Client::ReadStdin() {
   string msg;
   getline(cin, msg);
   return msg;
 }
 
-void Client::sendServer(string msg, TcpConnection &con) {
+void Client::SendServer(string msg, TcpConnection &con) {
   // 1. 发送数据长度，目前会将换行符也发送过去
   int len = msg.size();
   // cout << "before send len : " << len << endl;  // 测试
-  con.sendInt(len);
+  con.SendInt(len);
   // cout << "after send len : " << len << endl;  // 测试
   // 2. 发送数据
   // cout << "before send msg : " << msg << endl;  // 测试
-  con.send(msg);
+  con.Send(msg);
   // cout << "after send msg : " << msg << endl;  // 测试
 }
 
-string Client::readServer(TcpConnection &con) {
+string Client::ReadServer(TcpConnection &con) {
   // 1. 读取数据长度
   // cout << "before receive len" << endl;  // 测试
-  int len = con.receiveInt();
+  int len = con.ReceiveInt();
   // cout << "after receive len : " << len << endl;  // 测试
   // 2. 读取数据
   // cout << "before receive msg" << endl;  // 测试
-  string msg = con.receive(len);
+  string msg = con.Receive(len);
  // cout << "after receive msg : " << msg << endl;  // 测试
   return msg;
 }
 
-void Client::displayKey(string result) {
+void Client::DisplayKey(string result) {
   // 处理json
   auto j = json::parse(result);
 
@@ -210,7 +209,7 @@ void from_json(const json &j, Page &w) {
   j.at("title").get_to(w.title);
   j.at("url").get_to(w.url);
 }
-void Client::displayWeb(string result) {
+void Client::DisplayWeb(string result) {
   if(result == "未查到相关文章！"){
     cout << result << endl;
     return;
@@ -223,11 +222,11 @@ void Client::displayWeb(string result) {
   // }
   vector<Page> page = j.get<vector<Page>>();
   // 分页显示结果
-  pagingDisplay(page);
+  PagingDisplay(page);
 }
 
 // 分页显示结果
-void Client::pagingDisplay(vector<Page> &v) {
+void Client::PagingDisplay(vector<Page> &v) {
   int totalPage = v.size() / 5;
   if (v.size() % 5 != 0) {
     totalPage += 1;
@@ -278,12 +277,12 @@ void Client::pagingDisplay(vector<Page> &v) {
   }
 }
 
-void Client::close() {
-  _isClosed = true;
+void Client::Close() {
+  isClosed_ = true;
 }
 
 // 创建epfd文件描述符
-int Client::createEpollFd() {
+int Client::CreateEpollFd() {
   int fd = epoll_create1(0);
   if (fd < 0) {
     perror("epoll_create1");

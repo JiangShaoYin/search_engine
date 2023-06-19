@@ -8,57 +8,57 @@ using std::endl;
 using std::ostringstream;
 
 TcpConnection::TcpConnection(int fd)
-    : _sockIO(fd), _sock(fd), _localAddr(getLocalAddr()), _peerAddr(getPeerAddr()) {
+    : sockIO_(fd), sock_(fd), localAddr_(GetLocalAddr()), peerAddr_(GetPeerAddr()) {
 }
 
 TcpConnection::~TcpConnection() {
 }
 
-void TcpConnection::send(const string &msg) {
-  _sockIO.writen(msg.c_str(), msg.size());
+void TcpConnection::Send(const string &msg) {
+  sockIO_.Writen(msg.c_str(), msg.size());
 }
 
-void TcpConnection::sendInt(int num) {
-  _sockIO.writen((char *)&num, sizeof(int));
+void TcpConnection::SendInt(int num) {
+  sockIO_.Writen((char *)&num, sizeof(int));
 }
 
-string TcpConnection::receive(int len) {
+string TcpConnection::Receive(int len) {
   char buff[len + 1] = {0};
-  _sockIO.readn(buff, len);
+  sockIO_.Readn(buff, len);
 
   return string(buff);
 }
 
-int TcpConnection::receiveInt() {
+int TcpConnection::ReceiveInt() {
   int num;
-  _sockIO.readn((char *)&num, sizeof(int));
+  sockIO_.Readn((char *)&num, sizeof(int));
   return num;
 }
 
 // 查看对应的缓冲区中是否有数据
-bool TcpConnection::isClosed() const {
+bool TcpConnection::IsClosed() const {
   char buf[10] = {0};
-  int ret = ::recv(_sock.fd(), buf, sizeof(buf), MSG_PEEK);
+  int ret = ::recv(sock_.fd(), buf, sizeof(buf), MSG_PEEK);
 
   return 0 == ret;
 }
 
-string TcpConnection::toString() {
+string TcpConnection::ToString() {
   ostringstream oss;
-  oss << _localAddr.ip() << ":"
-      << _localAddr.port() << "---->"
-      << _peerAddr.ip() << ":"
-      << _peerAddr.port();
+  oss << localAddr_.Ip() << ":"
+      << localAddr_.Port() << "---->"
+      << peerAddr_.Ip() << ":"
+      << peerAddr_.Port();
 
   return oss.str();
 }
 
 // 获取本端的网络地址信息
-InetAddress TcpConnection::getLocalAddr() {
+InetAddress TcpConnection::GetLocalAddr() {
   struct sockaddr_in addr;
   socklen_t len = sizeof(struct sockaddr);
   // 获取本端地址的函数getsockname
-  int ret = getsockname(_sock.fd(), (struct sockaddr *)&addr, &len);
+  int ret = getsockname(sock_.fd(), (struct sockaddr *)&addr, &len);
   if (-1 == ret) {
     perror("getsockname");
   }
@@ -67,11 +67,11 @@ InetAddress TcpConnection::getLocalAddr() {
 }
 
 // 获取对端的网络地址信息
-InetAddress TcpConnection::getPeerAddr() {
+InetAddress TcpConnection::GetPeerAddr() {
   struct sockaddr_in addr;
   socklen_t len = sizeof(struct sockaddr);
   // 获取对端地址的函数getpeername
-  int ret = getpeername(_sock.fd(), (struct sockaddr *)&addr, &len);
+  int ret = getpeername(sock_.fd(), (struct sockaddr *)&addr, &len);
   if (-1 == ret) {
     perror("getpeername");
   }
@@ -80,32 +80,32 @@ InetAddress TcpConnection::getPeerAddr() {
 }
 
 // 注册Tcp连接中的三个事情
-void TcpConnection::setConnectionCallback(const TcpConnectionCallback &cb) {
-  _onConnectionCb = cb;
+void TcpConnection::SetConnectionCallback(const TcpConnectionCallback &cb) {
+  onConnectionCb_ = cb;
 }
-void TcpConnection::setMessageCallback(const TcpConnectionCallback &cb) {
-  _onMessageCb = cb;
+void TcpConnection::SetMessageCallback(const TcpConnectionCallback &cb) {
+  onMessageCb_ = cb;
 }
-void TcpConnection::setCloseCallback(const TcpConnectionCallback &cb) {
-  _onCloseCb = cb;
+void TcpConnection::SetCloseCallback(const TcpConnectionCallback &cb) {
+  onCloseCb_ = cb;
 }
 
 // 执行Tcp通信过程中的三个事件
-void TcpConnection::handleConnectionCallback() {
-  if (_onConnectionCb) {
+void TcpConnection::HandleConnectionCallback() {
+  if (onConnectionCb_) {
     // 为了防止指针的误用，也就是防止不同的智能指针
     // 托管同一个裸指针
     /* _onConnectionCb(shared_ptr<TcpConnection>(this)); */
-    _onConnectionCb(shared_from_this());
+    onConnectionCb_(shared_from_this());
   }
 }
-void TcpConnection::handleMessageCallback() {
-  if (_onMessageCb) {
-    _onMessageCb(shared_from_this());
+void TcpConnection::HandleMessageCallback() {
+  if (onMessageCb_) {
+    onMessageCb_(shared_from_this());
   }
 }
-void TcpConnection::handleCloseCallback() {
-  if (_onCloseCb) {
-    _onCloseCb(shared_from_this());
+void TcpConnection::HandleCloseCallback() {
+  if (onCloseCb_) {
+    onCloseCb_(shared_from_this());
   }
 }
